@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "370581951227",
+    "project_id": "text-extraction-app-c093d",
+    "storage_bucket": "text-extraction-app-c093d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370581951227:android:da53940572dbc7f66c565e",
+        "android_client_info": {
+          "package_name": "com.example.text_extraction_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB04N4tQOHGPhsd8PvJieTfU3y2aQ-9kEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
