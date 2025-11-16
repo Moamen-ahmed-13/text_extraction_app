@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:text_extraction_app/core/theme/app_theme.dart';
+import 'package:text_extraction_app/core/utils/logger_service.dart';
 import 'package:text_extraction_app/logic/cubits/auth/auth_cubit.dart';
 import 'package:text_extraction_app/logic/cubits/auth/auth_state.dart';
 import 'package:text_extraction_app/logic/cubits/history/history_cubit.dart';
@@ -17,32 +18,63 @@ import 'presentation/screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final dbPath = await getDatabasesPath();
-  final path = join(dbPath, 'text_extractor.db');
-  await deleteDatabase(path);
-  print('✅ Old database deleted');
-  try {
-    print('🔥 Initializing Firebase...');
-    await Firebase.initializeApp();
-    print('✅ Firebase initialized successfully!');
 
-    print('📦 Initializing Supabase...');
+  try {
+    try {
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, 'text_extractor.db');
+      await deleteDatabase(path);
+      LoggerService.info('✅ Old database deleted successfully');
+    } catch (e) {
+      LoggerService.warning('⚠️  Database deletion skipped', e);
+    }
+    LoggerService.info('🔥 Initializing Firebase...');
+    await Firebase.initializeApp();
+    LoggerService.info('✅ Firebase initialized successfully!');
+
+    LoggerService.info('📦 Initializing Supabase...');
     await Supabase.initialize(
       url: AppConstants.supabaseUrl,
       anonKey: AppConstants.supabaseAnonKey,
     );
-    print('✅ Supabase initialized successfully!');
+    LoggerService.info('✅ Supabase initialized successfully!');
 
-    print('💉 Setting up Dependency Injection...');
+    LoggerService.info('💉 Setting up Dependency Injection...');
     await configureDependencies();
-    print('✅ Dependency Injection setup complete!');
+    LoggerService.info('✅ Dependency Injection setup complete!');
 
     runApp(const MyApp());
-  } catch (e) {
-    print('❌ Error during initialization: $e');
+  } catch (e, stackTrace) {
+    LoggerService.error('❌ Error during initialization', e, stackTrace);
     runApp(
       MaterialApp(
-        home: Scaffold(body: Center(child: Text('Initialization Error: $e'))),
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Initialization Error',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    e.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
