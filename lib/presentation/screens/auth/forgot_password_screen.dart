@@ -29,6 +29,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  String _getFriendlyErrorMessage(String error) {
+    error = error.replaceAll('Exception: ', '');
+
+    if (error.contains('user-not-found') || error.contains('No account found')) {
+      return 'No account found with this email address.';
+    } else if (error.contains('invalid-email')) {
+      return 'Please enter a valid email address.';
+    } else if (error.contains('too-many-requests')) {
+      return 'Too many attempts. Please try again later.';
+    } else if (error.contains('network')) {
+      return 'Network error. Please check your internet connection.';
+    } else {
+      return error;
+    }
+  }
+
+  IconData _getErrorIcon(String error) {
+    if (error.contains('user-not-found') || error.contains('No account found')) {
+      return Icons.person_off;
+    } else if (error.contains('too-many-requests')) {
+      return Icons.block;
+    } else if (error.contains('network')) {
+      return Icons.wifi_off;
+    } else {
+      return Icons.error_outline;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,15 +66,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
+                content: Row(
+                  children: [
+                    Icon(
+                      _getErrorIcon(state.message),
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(_getFriendlyErrorMessage(state.message)),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.red.shade700,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 4),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  textColor: Colors.white,
+                  onPressed: () {},
+                ),
               ),
             );
           } else if (state is AuthPasswordResetSent) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Password reset email sent! Check your inbox.'),
+                content: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text('Password reset email sent! Check your inbox.'),
+                    ),
+                  ],
+                ),
                 backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 3),
               ),
             );
             Navigator.pop(context);
@@ -54,6 +110,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         },
         builder: (context, state) {
           final isLoading = state is AuthLoading;
+          final hasError = state is AuthError;
+          final errorMessage = hasError ? _getFriendlyErrorMessage(state.message) : null;
 
           return SingleChildScrollView(
             child: Padding(
@@ -83,6 +141,54 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
+
+                    if (hasError && errorMessage != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.red.shade300,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _getErrorIcon(state.message),
+                              color: Colors.red.shade700,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Reset Failed',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red.shade900,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    errorMessage,
+                                    style: TextStyle(
+                                      color: Colors.red.shade800,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                     CustomTextField(
                       controller: _emailController,
                       label: 'Email',

@@ -21,8 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  String? _errorMessage;
-  bool _showError = false;
 
   @override
   void dispose() {
@@ -34,11 +32,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _handleRegister() {
-    setState(() {
-      _errorMessage = null;
-      _showError = false;
-    });
-
     if (_formKey.currentState!.validate()) {
       context.read<AuthCubit>().signUp(
             _emailController.text.trim(),
@@ -85,11 +78,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: BlocConsumer<AuthCubit, AuthenState>(
         listener: (context, state) {
           if (state is AuthError) {
-            setState(() {
-              _errorMessage = _getFriendlyErrorMessage(state.message);
-              _showError = true;
-            });
-
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
@@ -136,6 +124,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
         builder: (context, state) {
           final isLoading = state is AuthLoading;
+          final hasError = state is AuthError;
+          final errorMessage = hasError ? _getFriendlyErrorMessage(state.message) : null;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -145,7 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (_showError && _errorMessage != null)
+                    if (hasError && errorMessage != null)
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(16),
@@ -160,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Row(
                           children: [
                             Icon(
-                              _getErrorIcon(_errorMessage!),
+                              _getErrorIcon(state.message),
                               color: Colors.red.shade700,
                               size: 24,
                             ),
@@ -179,7 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    _errorMessage!,
+                                    errorMessage,
                                     style: TextStyle(
                                       color: Colors.red.shade800,
                                       fontSize: 13,
@@ -187,16 +177,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ],
                               ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              iconSize: 20,
-                              color: Colors.red.shade700,
-                              onPressed: () {
-                                setState(() {
-                                  _showError = false;
-                                });
-                              },
                             ),
                           ],
                         ),
@@ -241,7 +221,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Confirm Password Field
                     CustomTextField(
                       controller: _confirmPasswordController,
                       label: 'Confirm Password',
