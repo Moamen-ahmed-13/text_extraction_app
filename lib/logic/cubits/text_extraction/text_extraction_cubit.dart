@@ -72,7 +72,7 @@ class TextExtractionCubit extends Cubit<TextExtractionState> {
 
       String cloudImageUrl = '';
       try {
-        cloudImageUrl = await _storageService.uploadProfileImage(
+        cloudImageUrl = await _storageService.uploadExtractionImage(
           userId,
           imageFile,
         );

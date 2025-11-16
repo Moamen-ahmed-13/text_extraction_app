@@ -55,59 +55,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (state is ProfileLoaded) {
             return SingleChildScrollView(
               padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundImage: state.user.profileImageUrl != null
-                        ? NetworkImage(state.user.profileImageUrl!)
-                        : null,
-                    child: state.user.profileImageUrl == null
-                        ? const Icon(Icons.person, size: 60)
-                        : null,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    state.user.fullName,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
+              child: SizedBox(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height - 200,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundImage: state.user.profileImageUrl != null
+                              ? NetworkImage(state.user.profileImageUrl!)
+                              : null,
+                          child: state.user.profileImageUrl == null
+                              ? const Icon(Icons.person, size: 60)
+                              : null,
                         ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    state.user.email,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey,
+                        const SizedBox(height: 24),
+                        Text(
+                          state.user.fullName,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                  ),
-                  const SizedBox(height: 48),
-                  ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: const Text('Logout'),
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Logout'),
-                          content: const Text('Are you sure you want to logout?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
+                        const SizedBox(height: 8),
+                        Text(
+                          state.user.email,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+
+                    ListTile(
+                      leading: const Icon(Icons.logout),
+                      title: const Text('Logout'),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Logout'),
+                            content: const Text(
+                              'Are you sure you want to logout?',
                             ),
-                            TextButton(
-                              onPressed: () {
-                                context.read<AuthCubit>().signOut();
-                                Navigator.of(context).popUntil((route) => route.isFirst);
-                              },
-                              child: const Text('Logout'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+
+                              TextButton(
+                                onPressed: () {
+                                  context.read<AuthCubit>().signOut();
+                                  Navigator.of(
+                                    context,
+                                  ).popUntil((route) => route.isFirst);
+                                },
+                                child: const Text('Logout'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             );
           }

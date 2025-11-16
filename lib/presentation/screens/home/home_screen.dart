@@ -22,9 +22,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const HistoryScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
               );
             },
           ),
@@ -33,9 +31,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
             },
           ),
@@ -66,7 +62,6 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Image Preview
                   if (extractionState is TextExtractionImageSelected ||
                       extractionState is TextExtractionSuccess)
                     Container(
@@ -81,7 +76,8 @@ class HomeScreen extends StatelessWidget {
                         child: Image.file(
                           extractionState is TextExtractionImageSelected
                               ? extractionState.image
-                              : (extractionState as TextExtractionSuccess).image,
+                              : (extractionState as TextExtractionSuccess)
+                                    .image,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -116,7 +112,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   const SizedBox(height: 24),
 
-                  // Action Buttons
                   Row(
                     children: [
                       Expanded(
@@ -152,7 +147,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Extract Button
                   if (extractionState is TextExtractionImageSelected)
                     SizedBox(
                       width: double.infinity,
@@ -179,7 +173,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   const SizedBox(height: 24),
 
-                  // Loading Indicator
                   if (extractionState is TextExtractionLoading)
                     const Column(
                       children: [
@@ -189,15 +182,14 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
 
-                  // Extracted Text Display
                   if (extractionState is TextExtractionSuccess)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,11 +199,10 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Text(
                                 'Extracted Text',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
+                                style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.bold,
+                                      color: Colors.grey.shade600,
                                     ),
                               ),
                               IconButton(
@@ -235,7 +226,10 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           SelectableText(
                             extractionState.extractedText,
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),

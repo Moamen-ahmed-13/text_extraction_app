@@ -119,6 +119,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               width: 60,
                               height: 60,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.broken_image,
+                                  size: 60,
+                                  color: Colors.grey[400],
+                                );
+                              },
                             ),
                           ),
                           title: Text(

@@ -63,7 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // App Logo/Icon
                       Icon(
                         Icons.document_scanner,
                         size: 80,
@@ -71,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       
-                      // Title
                       Text(
                         'Text Extractor',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -89,7 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 48),
 
-                      // Email Field
                       CustomTextField(
                         controller: _emailController,
                         label: 'Email',
@@ -108,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Password Field
                       CustomTextField(
                         controller: _passwordController,
                         label: 'Password',
@@ -139,7 +135,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Forgot Password
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
@@ -156,7 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Login Button
                       CustomButton(
                         onPressed: isLoading ? null : _handleLogin,
                         text: 'Login',
@@ -164,7 +158,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Register Link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

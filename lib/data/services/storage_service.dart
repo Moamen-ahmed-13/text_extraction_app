@@ -10,11 +10,19 @@ class StorageService {
   Future<String> uploadProfileImage(String userId, File imageFile) async {
     try {
       final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.png';
-      final path='$userId/$fileName';
+      final path = '$userId/$fileName';
+      final bytes = await imageFile.readAsBytes();
+
       await _supabaseClient.storage
           .from(AppConstants.profileImagesBucket)
-          .upload(path,imageFile);
-
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/png',
+              upsert: true,
+            ),
+          );
       final publicUrl = _supabaseClient.storage
           .from(AppConstants.profileImagesBucket)
           .getPublicUrl(path);
@@ -24,15 +32,55 @@ class StorageService {
       throw Exception('Failed to upload profile image: ${e.toString()}');
     }
   }
+
+  Future<String> uploadExtractionImage(String userId, File imageFile) async {
+    try {
+      final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final path = '$userId/$fileName';
+
+      final bytes = await imageFile.readAsBytes();
+      await _supabaseClient.storage
+          .from(AppConstants.extractionImagesBucket)
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/png',
+              upsert: true,
+            ),
+          );
+
+      final publicUrl = _supabaseClient.storage
+          .from(AppConstants.extractionImagesBucket)
+          .getPublicUrl(path);
+
+      return publicUrl;
+    } catch (e) {
+      throw Exception('Failed to upload extraction image: ${e.toString()}');
+    }
+  }
+
   Future<void> deleteProfileImage(String userId, String imageUrl) async {
     try {
       final uri = Uri.parse(imageUrl);
-      final path=uri.pathSegments.skip(4).join('/'); 
+      final path = uri.pathSegments.skip(4).join('/');
       await _supabaseClient.storage
           .from(AppConstants.profileImagesBucket)
           .remove([path]);
     } catch (e) {
       throw Exception('Failed to delete profile image: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteExtractionImage(String userId, String imageUrl) async {
+    try {
+      final uri = Uri.parse(imageUrl);
+      final path = uri.pathSegments.skip(4).join('/');
+      await _supabaseClient.storage
+          .from(AppConstants.extractionImagesBucket)
+          .remove([path]);
+    } catch (e) {
+      throw Exception('Failed to delete extraction image: ${e.toString()}');
     }
   }
 }

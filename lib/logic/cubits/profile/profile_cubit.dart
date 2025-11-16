@@ -38,7 +38,6 @@ class ProfileCubit extends Cubit<ProfileState> {
         profileImageUrl: imageUrl,
       );
      await loadUserProfile(userId);
-      emit(ProfileUpdateSuccess());
     } catch (e) {
       emit(ProfileError('Failed to update profile: ${e.toString()}'));
     }

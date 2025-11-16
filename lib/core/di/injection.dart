@@ -37,6 +37,9 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<StorageService>(
     () => StorageService(getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<FirebaseAuthService>(
+    () => FirebaseAuthService(getIt<FirebaseAuth>()),
+  );
 
   getIt.registerLazySingleton<AuthCubit>(
     () => AuthCubit(
