@@ -13,7 +13,7 @@ class AppConstants {
   static const String extractionHistoryTable = 'extraction_history';
 
   static const String localDatabaseName = 'text_extractor.db';
-  static const int databaseVersion = 2;
+  static const int databaseVersion = 3;
 
   static const int minPasswordLength = 6;
   static const int maxNameLength = 50;

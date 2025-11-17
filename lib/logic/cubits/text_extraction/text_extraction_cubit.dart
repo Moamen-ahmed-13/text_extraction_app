@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:text_extraction_app/core/utils/connectivity_service.dart';
 import 'package:text_extraction_app/data/models/extraction_history_model.dart';
 import 'package:text_extraction_app/data/services/database_helper.dart';
 import 'package:text_extraction_app/data/services/firebase_firestore_service.dart';
@@ -13,6 +14,7 @@ class TextExtractionCubit extends Cubit<TextExtractionState> {
   final DatabaseHelper _databaseHelper;
   final FirebaseFirestoreService _firestoreService;
   final StorageService _storageService;
+  final ConnectivityService _connectivityService;
   final ImagePicker _imagePicker;
   final TextRecognizer _textRecognizer;
 
@@ -20,6 +22,7 @@ class TextExtractionCubit extends Cubit<TextExtractionState> {
     this._databaseHelper,
     this._firestoreService,
     this._storageService,
+    this._connectivityService,
   ) : _imagePicker = ImagePicker(),
       _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin),
       super(TextExtractionInitial());
@@ -50,6 +53,8 @@ class TextExtractionCubit extends Cubit<TextExtractionState> {
       if (capturedFile != null) {
         final File imageFile = File(capturedFile.path);
         emit(TextExtractionImageSelected(imageFile));
+      }else  {
+        emit(TextExtractionInitial());
       }
     } catch (e) {
       emit(TextExtractionError('Failed to capture image: ${e.toString()}'));
@@ -58,6 +63,8 @@ class TextExtractionCubit extends Cubit<TextExtractionState> {
 
   Future<void> extractTextFromImage(File imageFile, String userId) async {
     emit(TextExtractionLoading());
+        final bool isOnline = await _connectivityService.checkConnection();
+    
     try {
       final inputImage = InputImage.fromFile(imageFile);
       final RecognizedText recognizedText = await _textRecognizer.processImage(
@@ -70,26 +77,33 @@ class TextExtractionCubit extends Cubit<TextExtractionState> {
         return;
       }
 
-      String cloudImageUrl = '';
-      try {
-        cloudImageUrl = await _storageService.uploadExtractionImage(
-          userId,
-          imageFile,
-        );
-      } catch (e) {
-        emit(TextExtractionError('Failed to upload image: ${e.toString()}'));
-        return;
+      String? cloudImageUrl;
+
+      // 2. Upload to cloud if online
+      if (isOnline) {
+        try {
+          cloudImageUrl = await _storageService.uploadExtractionImage(
+            userId,
+            imageFile,
+          );
+        } catch (e) {
+          // Continue even if cloud upload fails - save locally
+          print('Cloud upload failed: $e');
+        }
       }
 
+      // 3. Save to local database with both URLs
       final extraction = ExtractionHistoryModel(
         userId: userId,
-        imageUrl: imageFile.path,
+        imageUrl: imageFile.path, // Local path
+        cloudImageUrl: cloudImageUrl, // Cloud URL (null if offline)
         extractedText: extractedText,
         createdAt: DateTime.now(),
       );
       await _databaseHelper.insertExtraction(extraction);
 
-      if (cloudImageUrl.isNotEmpty) {
+      // 4. Save to Firestore if online
+      if (isOnline && cloudImageUrl != null) {
         try {
           await _firestoreService.saveExtractionToCloud(
             userId: userId,
@@ -97,12 +111,15 @@ class TextExtractionCubit extends Cubit<TextExtractionState> {
             extractedText: extractedText,
           );
         } catch (e) {
-          emit(TextExtractionError('Failed to update profile image URL: ${e.toString()}'));
-          return;
+          print('Firestore save failed: $e');
         }
       }
 
-      emit(TextExtractionSuccess(extractedText, imageFile));
+      emit(TextExtractionSuccess(
+        extractedText,
+        imageFile,
+        isOffline: !isOnline,
+      ));
     } catch (e) {
       emit(TextExtractionError('Failed to extract text: ${e.toString()}'));
     }

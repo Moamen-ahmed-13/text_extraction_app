@@ -5,6 +5,7 @@ import 'package:text_extraction_app/data/models/extraction_history_model.dart';
 
 class DatabaseHelper {
   static Database? _database;
+
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await initDatabase();
@@ -28,34 +29,43 @@ class DatabaseHelper {
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id TEXT,
               image_url TEXT,
+              cloud_image_url TEXT,
               extracted_text TEXT,
               created_at TEXT
             )
           ''');
   }
 
+  // Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  //   if (oldVersion < newVersion) {
+  //     await db.execute('''
+  //       CREATE TABLE extraction_history_new(
+  //         id INTEGER PRIMARY KEY AUTOINCREMENT,
+  //         user_id TEXT,
+  //         image_url TEXT,
+  //         extracted_text TEXT,
+  //         created_at TEXT
+  //       )
+  //     ''');
+
+  //     await db.execute('''
+  //       INSERT INTO extraction_history_new (id, user_id, image_url, extracted_text, created_at)
+  //       SELECT id, user_id, image_path, extracted_text, created_at
+  //       FROM extraction_history
+  //     ''');
+
+  //     await db.execute('DROP TABLE extraction_history');
+
+  //     await db.execute(
+  //       'ALTER TABLE extraction_history_new RENAME TO extraction_history',
+  //     );
+  //   }
+  // }
+
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < newVersion) {
-      await db.execute('''
-        CREATE TABLE extraction_history_new(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id TEXT,
-          image_url TEXT,
-          extracted_text TEXT,
-          created_at TEXT
-        )
-      ''');
-
-      await db.execute('''
-        INSERT INTO extraction_history_new (id, user_id, image_url, extracted_text, created_at)
-        SELECT id, user_id, image_path, extracted_text, created_at
-        FROM extraction_history
-      ''');
-
-      await db.execute('DROP TABLE extraction_history');
-
+    if (oldVersion < 3) {
       await db.execute(
-        'ALTER TABLE extraction_history_new RENAME TO extraction_history',
+        'ALTER TABLE extraction_history ADD COLUMN cloud_image_url TEXT',
       );
     }
   }
@@ -65,20 +75,20 @@ class DatabaseHelper {
     return await db.insert('extraction_history', extraction.toJson());
   }
 
-  Future<List<ExtractionHistoryModel>> getExtractionsByUser(
-    String userId,
-  ) async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'extraction_history',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'created_at DESC',
-    );
-    return List.generate(maps.length, (i) {
-      return ExtractionHistoryModel.fromJson(maps[i]);
-    });
-  }
+  // Future<List<ExtractionHistoryModel>> getExtractionsByUser(
+  //   String userId,
+  // ) async {
+  //   final db = await database;
+  //   final List<Map<String, dynamic>> maps = await db.query(
+  //     'extraction_history',
+  //     where: 'user_id = ?',
+  //     whereArgs: [userId],
+  //     orderBy: 'created_at DESC',
+  //   );
+  //   return List.generate(maps.length, (i) {
+  //     return ExtractionHistoryModel.fromJson(maps[i]);
+  //   });
+  // }
 
   Future<List<ExtractionHistoryModel>> getAllExtractions(String userId) async {
     final db = await database;

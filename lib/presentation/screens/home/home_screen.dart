@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:text_extraction_app/core/di/injection.dart';
+import 'package:text_extraction_app/core/utils/connectivity_service.dart';
 import 'package:text_extraction_app/logic/cubits/auth/auth_cubit.dart';
 import 'package:text_extraction_app/logic/cubits/auth/auth_state.dart';
 import 'package:text_extraction_app/logic/cubits/text_extraction/text_extraction_cubit.dart';
@@ -8,8 +10,15 @@ import 'package:text_extraction_app/logic/cubits/text_extraction/text_extraction
 import 'package:text_extraction_app/presentation/screens/history/history_screen.dart';
 import 'package:text_extraction_app/presentation/screens/profile/profile_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final ConnectivityService _connectivityService = getIt<ConnectivityService>();
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +26,44 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Text Extractor'),
         actions: [
+          StreamBuilder<bool>(
+            stream: _connectivityService.connectionStream,
+            initialData: _connectivityService.isOnline,
+            builder: (context, snapshot) {
+              final isOnline = snapshot.data ?? true;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isOnline ? Colors.green.shade100 : Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isOnline ? Icons.cloud_done : Icons.cloud_off,
+                          size: 16,
+                          color: isOnline ? Colors.green.shade700 : Colors.orange.shade700,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isOnline ? 'Online' : 'Offline',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isOnline ? Colors.green.shade700 : Colors.orange.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -48,9 +95,22 @@ class HomeScreen extends StatelessWidget {
             );
           } else if (state is TextExtractionSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Text extracted successfully!'),
-                backgroundColor: Colors.green,
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        state.isOffline
+                            ? 'Text extracted (Offline mode - will sync when online)'
+                            : 'Text extracted successfully!',
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: state.isOffline ? Colors.orange : Colors.green,
+                duration: Duration(seconds: state.isOffline ? 4 : 2),
               ),
             );
           }
@@ -76,8 +136,7 @@ class HomeScreen extends StatelessWidget {
                         child: Image.file(
                           extractionState is TextExtractionImageSelected
                               ? extractionState.image
-                              : (extractionState as TextExtractionSuccess)
-                                    .image,
+                              : (extractionState as TextExtractionSuccess).image,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -117,9 +176,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            context
-                                .read<TextExtractionCubit>()
-                                .pickImagefromGallery();
+                            context.read<TextExtractionCubit>().pickImagefromGallery();
                           },
                           icon: const Icon(Icons.photo_library),
                           label: const Text('Gallery'),
@@ -132,9 +189,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            context
-                                .read<TextExtractionCubit>()
-                                .captureImageWithCamera();
+                            context.read<TextExtractionCubit>().captureImageWithCamera();
                           },
                           icon: const Icon(Icons.camera_alt),
                           label: const Text('Camera'),
@@ -154,9 +209,7 @@ class HomeScreen extends StatelessWidget {
                         onPressed: () {
                           final authState = context.read<AuthCubit>().state;
                           if (authState is AuthAuthenticated) {
-                            context
-                                .read<TextExtractionCubit>()
-                                .extractTextFromImage(
+                            context.read<TextExtractionCubit>().extractTextFromImage(
                                   extractionState.image,
                                   authState.user.uid,
                                 );
@@ -199,7 +252,9 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Text(
                                 'Extracted Text',
-                                style: Theme.of(context).textTheme.titleMedium
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.grey.shade600,

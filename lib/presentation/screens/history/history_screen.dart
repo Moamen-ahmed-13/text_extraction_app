@@ -7,6 +7,7 @@ import 'package:text_extraction_app/logic/cubits/auth/auth_cubit.dart';
 import 'package:text_extraction_app/logic/cubits/auth/auth_state.dart';
 import 'package:text_extraction_app/logic/cubits/history/history_cubit.dart';
 import 'package:text_extraction_app/logic/cubits/history/history_state.dart';
+import 'package:text_extraction_app/presentation/widgets/smart_image_widget.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -56,7 +57,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onPressed: () {
                         final authState = context.read<AuthCubit>().state;
                         if (authState is AuthAuthenticated) {
-                          context.read<HistoryCubit>().clearAllHistory(authState.user.uid);
+                          context.read<HistoryCubit>().clearAllHistory(
+                            authState.user.uid,
+                          );
                         }
                         Navigator.pop(context);
                       },
@@ -78,12 +81,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
               decoration: InputDecoration(
                 hintText: 'Search extractions...',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onChanged: (query) {
                 final authState = context.read<AuthCubit>().state;
                 if (authState is AuthAuthenticated) {
-                  context.read<HistoryCubit>().searchHistory(authState.user.uid, query);
+                  context.read<HistoryCubit>().searchHistory(
+                    authState.user.uid,
+                    query,
+                  );
                 }
               },
             ),
@@ -112,30 +120,45 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 16),
                         child: ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(extraction.imageUrl),
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.broken_image,
-                                  size: 60,
-                                  color: Colors.grey[400],
-                                );
-                              },
-                            ),
+                          leading: SmartImageWidget(
+                            cloudUrl: extraction.cloudImageUrl,
+                            localPath: extraction.imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
                           ),
                           title: Text(
                             extraction.extractedText,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Text(
-                            DateFormat('MMM dd, yyyy - hh:mm a')
-                                .format(extraction.createdAt),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                DateFormat(
+                                  'MMM dd, yyyy - hh:mm a',
+                                ).format(extraction.createdAt),
+                              ),
+                              if (extraction.cloudImageUrl == null)
+                                const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.cloud_off,
+                                      size: 12,
+                                      color: Colors.orange,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Offline',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -144,19 +167,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 icon: const Icon(Icons.copy),
                                 onPressed: () {
                                   Clipboard.setData(
-                                    ClipboardData(text: extraction.extractedText),
+                                    ClipboardData(
+                                      text: extraction.extractedText,
+                                    ),
                                   );
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Copied to clipboard')),
+                                    const SnackBar(
+                                      content: Text('Copied to clipboard'),
+                                    ),
                                   );
                                 },
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete),
                                 onPressed: () {
-                                  final authState = context.read<AuthCubit>().state;
+                                  final authState = context
+                                      .read<AuthCubit>()
+                                      .state;
                                   if (authState is AuthAuthenticated) {
-                                    context.read<HistoryCubit>().deleteExtraction(
+                                    context
+                                        .read<HistoryCubit>()
+                                        .deleteExtraction(
                                           extraction.id!,
                                           authState.user.uid,
                                         );
@@ -171,7 +202,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               builder: (context) => AlertDialog(
                                 title: const Text('Extracted Text'),
                                 content: SingleChildScrollView(
-                                  child: SelectableText(extraction.extractedText),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SmartImageWidget(
+                                        cloudUrl: extraction.cloudImageUrl,
+                                        localPath: extraction.imageUrl,
+                                        width: 200,
+                                        height: 300,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      SelectableText(extraction.extractedText),
+                                    ],
+                                  ),
                                 ),
                                 actions: [
                                   TextButton(

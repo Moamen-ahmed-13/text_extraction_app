@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:text_extraction_app/core/utils/connectivity_service.dart';
 import 'package:text_extraction_app/core/utils/logger_service.dart';
 import 'package:text_extraction_app/data/services/database_helper.dart';
 import 'package:text_extraction_app/data/services/firebase_auth_service.dart';
@@ -18,6 +19,9 @@ Future<void> configureDependencies() async {
   if (getIt.isRegistered<FirebaseAuth>()) {
     return;
   }
+
+  
+  getIt.registerLazySingleton<ConnectivityService>(() => ConnectivityService());
 
   getIt.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
@@ -55,6 +59,7 @@ Future<void> configureDependencies() async {
       getIt<DatabaseHelper>(),
       getIt<FirebaseFirestoreService>(),
       getIt<StorageService>(),
+      getIt<ConnectivityService>(),
     ),
   );
 

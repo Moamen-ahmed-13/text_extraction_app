@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:equatable/equatable.dart';
 
 abstract class TextExtractionState extends Equatable {
@@ -23,11 +22,16 @@ class TextExtractionImageSelected extends TextExtractionState {
 class TextExtractionSuccess extends TextExtractionState {
   final String extractedText;
   final File image;
+  final bool isOffline;
 
-  TextExtractionSuccess(this.extractedText, this.image);
+  TextExtractionSuccess(
+    this.extractedText,
+    this.image, {
+    this.isOffline = false,
+  });
 
   @override
-  List<Object?> get props => [extractedText, image];
+  List<Object?> get props => [extractedText, image, isOffline];
 }
 
 class TextExtractionError extends TextExtractionState {
