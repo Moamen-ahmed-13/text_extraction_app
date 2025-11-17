@@ -10,11 +10,8 @@ class AuthCubit extends Cubit<AuthenState> {
   final FirebaseFirestoreService _firestoreService;
   final DatabaseHelper _databaseHelper;
 
-  AuthCubit(
-    this._authService,
-    this._firestoreService,
-    this._databaseHelper,
-  ) : super(AuthInitial());
+  AuthCubit(this._authService, this._firestoreService, this._databaseHelper)
+    : super(AuthInitial());
 
   Future<void> checkAuthStatus() async {
     emit(AuthLoading());
@@ -65,7 +62,7 @@ class AuthCubit extends Cubit<AuthenState> {
 
       if (user != null) {
         LoggerService.info('User created successfully: ${user.email}');
-        
+
         try {
           await _firestoreService.createUserProfile(
             userId: user.uid,
@@ -93,14 +90,14 @@ class AuthCubit extends Cubit<AuthenState> {
 
   Future<void> resetPassword(String email) async {
     final currentState = state;
-    
+
     try {
       LoggerService.info('Sending password reset email to: $email');
       await _authService.resetPassword(email);
       LoggerService.info('Password reset email sent successfully');
-      
+
       emit(AuthPasswordResetSent());
-      
+
       await Future.delayed(const Duration(milliseconds: 500));
       if (state is AuthPasswordResetSent) {
         emit(currentState);
@@ -108,7 +105,7 @@ class AuthCubit extends Cubit<AuthenState> {
     } catch (e, stackTrace) {
       LoggerService.error('Password reset error', e, stackTrace);
       emit(AuthError(e.toString()));
-      
+
       await Future.delayed(const Duration(seconds: 2));
       if (state is AuthError) {
         emit(currentState);
@@ -130,19 +127,9 @@ class AuthCubit extends Cubit<AuthenState> {
   Future<void> signOut() async {
     try {
       LoggerService.info('Signing out user...');
-      
-      // Get current user ID before signing out
-      final userId = _authService.currentUser?.uid;
-      
-      // Sign out from Firebase
+
       await _authService.signOut();
-      
-      // Only clear the current user's data, not all data
-      // if (userId != null) {
-      //   await _databaseHelper.deleteAllExtractions(userId);
-      //   LoggerService.info('User data cleared for user: $userId');
-      // }
-      
+
       LoggerService.info('User signed out successfully');
       emit(AuthUnauthenticated());
     } catch (e, stackTrace) {
