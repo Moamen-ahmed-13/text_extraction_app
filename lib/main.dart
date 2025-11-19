@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +13,6 @@ import 'package:text_extraction_app/logic/cubits/history/history_cubit.dart';
 import 'package:text_extraction_app/logic/cubits/profile/profile_cubit.dart';
 import 'package:text_extraction_app/logic/cubits/text_extraction/text_extraction_cubit.dart';
 import 'core/di/injection.dart';
-import 'core/constants/app_constants.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
 
@@ -20,6 +20,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    try {
+        await dotenv.load(fileName: ".env");
+      } catch (e) {
+        LoggerService.warning('⚠️Warning: .env file not found. Using default configuration.');
+      }
     try {
       final dbPath = await getDatabasesPath();
       final path = join(dbPath, 'text_extractor.db');
@@ -34,8 +39,8 @@ void main() async {
 
     LoggerService.info('📦 Initializing Supabase...');
     await Supabase.initialize(
-      url: AppConstants.supabaseUrl,
-      anonKey: AppConstants.supabaseAnonKey,
+      url: dotenv.env['SUPABASE_URL'] ?? " ",
+      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? " ",
     );
     LoggerService.info('✅ Supabase initialized successfully!');
 

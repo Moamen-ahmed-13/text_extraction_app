@@ -1,7 +1,4 @@
 class AppConstants {
-  static const String supabaseUrl = 'https://slnubgaackcleycvouyv.supabase.co';
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsbnViZ2FhY2tjbGV5Y3ZvdXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NzU2NjYsImV4cCI6MjA3ODU1MTY2Nn0.9v0XpaR_hMM3N8Vpt0Poa_FrRVUkXlAFeWPKtetF4Nw';
 
   static const String profileImagesBucket = 'profile_images';
   static const String extractionImagesBucket = 'extraction_images';
